@@ -6,6 +6,8 @@
 package registroproducto;
 
 import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -27,6 +29,32 @@ public class productDisplay extends javax.swing.JFrame {
         model.addColumn("Price");
         model.addColumn("Quantity");
         this.tblProduct.setModel(model);
+        
+        try
+        {
+            Connection cn = DriverManager.getConnection("jdbc:mysql://localhost:3306/productRecord", "root", "jason");
+            PreparedStatement pst = cn.prepareStatement("SELECT * FROM products");
+            
+            ResultSet rs = pst.executeQuery();
+            
+            while(rs.next())
+            {
+                Object[] agregar = new Object[4];
+        
+                agregar[0] = rs.getString("id");//ID
+                agregar[1] = rs.getString("name");//Name
+                agregar[2] = rs.getString("price");//Price
+                agregar[3] = rs.getString("quantity");//Quantity
+
+                model.addRow(agregar);      
+            }
+            
+        }catch(Exception e)
+        {
+            
+        }
+        
+
     }
 
     /**
@@ -52,8 +80,9 @@ public class productDisplay extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tblProduct = new javax.swing.JTable();
         btnInsert = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
         btnEdit = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -118,11 +147,12 @@ public class productDisplay extends javax.swing.JFrame {
             jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jDesktopPane1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
-                    .addComponent(txtID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtID, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel2)
+                        .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3)))
                 .addGap(18, 18, 18)
                 .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
@@ -164,11 +194,11 @@ public class productDisplay extends javax.swing.JFrame {
             }
         });
 
-        jButton1.setFont(new java.awt.Font("Fira Sans", 0, 12)); // NOI18N
-        jButton1.setText("Delete");
-        jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
+        btnDelete.setFont(new java.awt.Font("Fira Sans", 0, 12)); // NOI18N
+        btnDelete.setText("Delete");
+        btnDelete.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButton1MouseClicked(evt);
+                btnDeleteMouseClicked(evt);
             }
         });
 
@@ -177,6 +207,14 @@ public class productDisplay extends javax.swing.JFrame {
         btnEdit.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnEditMouseClicked(evt);
+            }
+        });
+
+        btnUpdate.setFont(new java.awt.Font("Fira Sans", 0, 12)); // NOI18N
+        btnUpdate.setText("Update");
+        btnUpdate.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnUpdateMouseClicked(evt);
             }
         });
 
@@ -192,7 +230,9 @@ public class productDisplay extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(btnEdit)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton1)
+                        .addComponent(btnDelete)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnUpdate)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnBack))
                     .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -213,8 +253,9 @@ public class productDisplay extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnBack)
                     .addComponent(btnInsert)
-                    .addComponent(jButton1)
-                    .addComponent(btnEdit))
+                    .addComponent(btnDelete)
+                    .addComponent(btnEdit)
+                    .addComponent(btnUpdate))
                 .addContainerGap())
         );
 
@@ -232,19 +273,39 @@ public class productDisplay extends javax.swing.JFrame {
 
     private void btnInsertMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnInsertMouseClicked
         // TODO add your handling code here:
+        try
+        {
+            Connection cn = DriverManager.getConnection("jdbc:mysql://localhost:3306/productRecord", "root", "jason");
+            PreparedStatement pst = cn.prepareStatement("INSERT INTO products VALUES (?, ?, ?, ?)");
+            
+            pst.setString(1, txtID.getText().trim());
+            pst.setString(2, txtName.getText().trim());
+            pst.setString(3, txtPrice.getText().trim());
+            pst.setString(4, txtQuantity.getText().trim());
+            
+            pst.executeUpdate();
+            
+            Object[] agregar = new Object[4];
+        
+            agregar[0] = txtID.getText().trim();//ID
+            agregar[1] = txtName.getText().trim();//Name
+            agregar[2] = txtPrice.getText().trim();//Price
+            agregar[3] = txtQuantity.getText().trim();//Quantity
+
+            model.addRow(agregar);
+            
+            txtID.setText("");//ID
+            txtName.setText("");//Name
+            txtPrice.setText("");//Price
+            txtQuantity.setText("");//Quantity
+            
+        }catch(Exception e)
+        {
+            
+        }
+        
         Object[] agregar = new Object[4];
         
-        agregar[0] = txtID.getText();//ID
-        agregar[1] = txtName.getText();//Name
-        agregar[2] = txtPrice.getText();//Price
-        agregar[3] = txtQuantity.getText();//Quantity
-
-        model.addRow(agregar);
-        
-        txtID.setText("");//ID
-        txtName.setText("");//Name
-        txtPrice.setText("");//Price
-        txtQuantity.setText("");//Quantity
     }//GEN-LAST:event_btnInsertMouseClicked
     
     int fila; //Guarda la fila.
@@ -281,7 +342,7 @@ public class productDisplay extends javax.swing.JFrame {
         fila = filaSeleccionada;
     }//GEN-LAST:event_tblProductMouseClicked
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+    private void btnDeleteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnDeleteMouseClicked
         // TODO add your handling code here:    
         model.removeRow(fila);
         
@@ -289,7 +350,36 @@ public class productDisplay extends javax.swing.JFrame {
         txtName.setText("");//Name
         txtPrice.setText("");//Price
         txtQuantity.setText("");//Quantity
-    }//GEN-LAST:event_jButton1MouseClicked
+    }//GEN-LAST:event_btnDeleteMouseClicked
+
+    private void btnUpdateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnUpdateMouseClicked
+        // TODO add your handling code here:        
+        try
+        {
+            Connection cn = DriverManager.getConnection("jdbc:mysql://localhost:3306/productRecord", "root", "jason");
+            PreparedStatement pst = cn.prepareStatement("SELECT * FROM products");
+            
+            ResultSet rs = pst.executeQuery();
+            
+            while(rs.next())
+            {
+                Object[] agregar = new Object[4];
+        
+                agregar[0] = rs.getString("id");//ID
+                agregar[1] = rs.getString("name");//Name
+                agregar[2] = rs.getString("price");//Price
+                agregar[3] = rs.getString("quantity");//Quantity
+
+                model.addRow(agregar);      
+            }
+            
+            JOptionPane.showMessageDialog(null, "Tabla actualizada con exito.");
+            
+        }catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(null, "Error al cargar la tabla.");
+        }
+    }//GEN-LAST:event_btnUpdateMouseClicked
 
     /**
      * @param args the command line arguments
@@ -328,9 +418,10 @@ public class productDisplay extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBack;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnInsert;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton btnUpdate;
     private javax.swing.JDesktopPane jDesktopPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
